@@ -1,0 +1,25 @@
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon\r
+._*
+
+# --- Configuraciones de Editores de Código ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# --- Dependencias (por si usas npm en el futuro) ---
+node_modules/
+package-lock.json
+yarn.lock
+
+# --- Archivos de Registro y Temporales ---
+*.log
+.npm
+.eslintcache

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <title>Enviar Dinero</title>
+  <style>
+    .contacto-seleccionado { background-color: #d4edda !important; border-color: #c3e6cb !important; }
+    .list-group-item { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container mt-5" style="max-width: 600px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Enviar Dinero</h2>
+      <a href="menu.html" class="btn btn-outline-secondary btn-sm">Volver</a>
+    </div>
+
+    <div class="card p-3 mb-3 bg-light">
+      <div class="form-group mb-0">
+        <label for="montoEnviar"><strong>Monto a enviar:</strong></label>
+        <input type="number" id="montoEnviar" class="form-control" placeholder="Ingrese el monto" min="1">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <input type="text" id="buscarContacto" class="form-control" placeholder="Buscar por nombre o alias...">
+    </div>
+
+    <div class="list-group mb-3" id="listaContactos">
+      <div class="list-group-item" data-nombre="Juan Pérez" data-alias="juan.pago">
+        <strong>Juan Pérez</strong> <br> <small>Alias: juan.pago | CBU: 1234567890123456789012</small>
+      </div>
+      <div class="list-group-item" data-nombre="María Rossi" data-alias="maria.pesos">
+        <strong>María Rossi</strong> <br> <small>Alias: maria.pesos | CBU: 9876543210987654321098</small>
+      </div>
+    </div>
+
+    <button id="btnEnviarDinero" class="btn btn-success btn-block d-none mb-3">Enviar dinero al contacto seleccionado</button>
+
+    <button id="btnMostrarForm" class="btn btn-outline-primary btn-block mb-3">+ Agregar nuevo contacto</button>
+
+    <div id="wrapperFormContacto" class="card p-3 mb-3 d-none bg-light">
+      <form id="formNuevoContacto">
+        <div class="form-group"><label>Nombre:</label><input type="text" id="nuevoNombre" class="form-control"></div>
+        <div class="form-group"><label>Alias:</label><input type="text" id="nuevoAlias" class="form-control"></div>
+        <div class="form-group"><label>CBU (22 dígitos):</label><input type="text" id="nuevoCbu" class="form-control" maxlength="22"></div>
+        <div id="errorFormContacto" class="text-danger mb-2"></div>
+        <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+        <button type="button" id="btnCancelarContacto" class="btn btn-secondary btn-sm">Cancelar</button>
+      </form>
+    </div>
+
+    <div id="mensajeConfirmacion"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+ 
+ <script>
+    $(document).ready(function() {
+        let contactoSeleccionado = null;
+        
+        $('#buscarContacto').on('keyup', function() {
+            let valor = $(this).val().toLowerCase();
+            $('#listaContactos .list-group-item').filter(function() {
+                let nombre = $(this).data('nombre').toLowerCase();
+                let alias = $(this).data('alias').toLowerCase();
+                $(this).toggle(nombre.indexOf(valor) > -1 || alias.indexOf(valor) > -1);
+            });
+        });
+
+        $('#listaContactos').on('click', '.list-group-item', function() {
+            $('.list-group-item').removeClass('contacto-seleccionado');
+            $(this).addClass('contacto-seleccionado');
+            contactoSeleccionado = $(this).data('nombre');
+            
+            $('#btnEnviarDinero').removeClass('d-none');
+        });
+
+        $('#btnMostrarForm').click(function() {
+            $('#wrapperFormContacto').removeClass('d-none');
+            $(this).addClass('d-none');
+        });
+
+        $('#btnCancelarContacto').click(function() {
+            $('#wrapperFormContacto').addClass('d-none');
+            $('#btnMostrarForm').removeClass('d-none');
+            $('#formNuevoContacto')[0].reset();
+            $('#errorFormContacto').empty();
+        });
+
+        $('#formNuevoContacto').submit(function(event) {
+            event.preventDefault();
+            $('#errorFormContacto').empty();
+
+            let nombre = $('#nuevoNombre').val().trim();
+            let alias = $('#nuevoAlias').val().trim();
+            let cbu = $('#nuevoCbu').val().trim();
+
+            if (!nombre || !alias || cbu.length !== 22 || isNaN(cbu)) {
+                $('#errorFormContacto').text('Error: Todos los campos son obligatorios. El CBU debe tener exactamente 22 números.');
+                return;
+            }
+
+            let nuevoItem = $('<div class="list-group-item" data-nombre="' + nombre + '" data-alias="' + alias + '">' +
+                '<strong>' + nombre + '</strong> <br> <small>Alias: ' + alias + ' | CBU: ' + cbu + '</small>' +
+            '</div>');
+
+            $('#listaContactos').append(nuevoItem);
+
+            $('#wrapperFormContacto').addClass('d-none');
+            $('#btnMostrarForm').removeClass('d-none');
+            $('#formNuevoContacto')[0].reset();
+        });
+
+        $('#btnEnviarDinero').click(function() {
+            $('#mensajeConfirmacion').empty();
+
+            let montoInput = $('#montoEnviar').val();
+            let monto = parseInt(montoInput);
+            let saldoActual = parseInt(localStorage.getItem('saldoUsuario')) || 10000;
+
+            if (!montoInput || isNaN(monto) || monto <= 0) {
+                $('#mensajeConfirmacion').html(
+                    '<div class="alert alert-danger text-center shadow-sm"><strong>Error:</strong> Ingrese un monto válido.</div>'
+                );
+                return;
+            }
+
+            if (monto > saldoActual) {
+                $('#mensajeConfirmacion').html(
+                    '<div class="alert alert-danger text-center shadow-sm"><strong>Fondos insuficientes:</strong> Su saldo actual es de $' + saldoActual.toLocaleString('es-CL') + '.</div>'
+                );
+                return;
+            }
+
+            let nuevoSaldo = saldoActual - monto;
+            localStorage.setItem('saldoUsuario', nuevoSaldo);
+
+            $('#mensajeConfirmacion').html(
+                '<div class="alert alert-success text-center shadow-sm mt-3">' +
+                    '<strong>¡Envío Confirmado!</strong> Se transfirieron $' + monto.toLocaleString('es-CL') + ' a <strong>' + contactoSeleccionado + '</strong> de forma exitosa.' +
+                '</div>'
+            );
+
+            setTimeout(function() {
+                window.location.href = 'menu.html';
+            }, 2000);
+        });
+    });
+  </script>
+</body>
+</html>

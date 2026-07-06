@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <title>Menú Principal</title>
+</head>
+<body>
+    <div class="container mt-5" style="max-width: 500px;">
+      <div class="bg-light border rounded shadow p-4">
+        <h1 class="text-center mb-4">Menú Principal</h1>
+        
+        <div class="card text-center mb-4 bg-light p-3">
+          <h4>Saldo Disponible</h4>
+          <h2 class="text-dark" id="saldoDisplay">$0</h2>
+        </div>
+
+        <div id="mensajeStatus" class="alert alert-info text-center d-none mb-4"></div>
+
+        <div class="d-flex flex-column">
+          <button id="btnDepositar" class="btn btn-primary btn-lg btn-block mb-3">Depositar</button>
+          <button id="btnEnviar" class="btn btn-primary btn-lg btn-block mb-3">Enviar Dinero</button>
+          <button id="btnMovimientos" class="btn btn-secondary btn-lg btn-block mb-3">Últimos Movimientos</button>
+        </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script>
+    $(document).ready(function() {
+
+        var saldoActual = localStorage.getItem('saldoUsuario') || 10000;
+        
+        $('#saldoDisplay').text('$' + parseInt(saldoActual).toLocaleString('es-CL'));
+
+        $('#btnDepositar').click(function() {
+            $('#mensajeStatus').removeClass('d-none').text('Redirigiendo a Depositar...');
+            setTimeout(function() {
+                window.location.href = 'deposit.html'; 
+            }, 1200);
+        });
+
+        $('#btnEnviar').click(function() {
+            $('#mensajeStatus').removeClass('d-none').text('Redirigiendo a Enviar Dinero...');
+            setTimeout(function() {
+                window.location.href = 'sendmoney.html';
+            }, 1200);
+        });
+
+        $('#btnMovimientos').click(function() {
+            $('#mensajeStatus').removeClass('d-none').text('Redirigiendo a Últimos Movimientos...');
+            setTimeout(function() {
+                window.location.href = 'transactions.html';
+            }, 1200);
+        });
+
+    });
+  </script>
+</body>
+</html>

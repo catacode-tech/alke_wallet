@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <title>Últimos Movimientos</title>
+</head>
+<body>
+  <div class="container mt-5" style="max-width: 600px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Últimos Movimientos</h2>
+      <a href="menu.html" class="btn btn-outline-secondary btn-sm">Volver al Menú</a>
+    </div>
+
+    <div class="form-group row align-items-center">
+      <label for="filtroTipo" class="col-sm-4 col-form-label"><strong>Filtrar por tipo:</strong></label>
+      <div class="col-sm-8">
+        <select id="filtroTipo" class="form-control">
+          <option value="todos">Todos los movimientos</option>
+          <option value="compra">Compras / Envíos</option>
+          <option value="deposito">Depósitos</option>
+          <option value="transferencia_recibida">Transferencias Recibidas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="list-group mt-4" id="contenedorTransacciones"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script>
+    $(document).ready(function() {
+
+        var listaTransacciones = [
+            { id: 1, tipo: 'deposito', monto: 15000, fecha: '02/07/2026', detalle: 'Abono por Caja Vecina' },
+            { id: 2, tipo: 'compra', monto: 4500, fecha: '03/07/2026', detalle: 'Transferencia a Juan Pérez' },
+            { id: 3, tipo: 'transferencia_recibida', monto: 50000, fecha: '04/07/2026', detalle: 'Depósito de Sueldo' },
+            { id: 4, tipo: 'compra', monto: 12990, fecha: '04/07/2026', detalle: 'Envío a María Rossi' },
+            { id: 5, tipo: 'deposito', monto: 20000, fecha: '04/07/2026', detalle: 'Depósito Cajero Automático' }
+        ];
+
+        function getTipoTransaccion(tipo) {
+            if (tipo === 'compra') {
+                return '<span class="badge badge-danger">Compra / Envío</span>';
+            } else if (tipo === 'deposito') {
+                return '<span class="badge badge-success">Depósito</span>';
+            } else if (tipo === 'transferencia_recibida') {
+                return '<span class="badge badge-primary">Transferencia Recibida</span>';
+            }
+            return '<span class="badge badge-secondary">Desconocido</span>';
+        }
+
+        function mostrarUltimosMovimientos(filtro) {
+            // Limpiamos el contenedor para refrescar la lista
+            $('#contenedorTransacciones').empty();
+
+            $.each(listaTransacciones, function(index, item) {
+                
+                if (filtro === 'todos' || item.tipo === filtro) {
+                    
+                    let etiquetaTipo = getTipoTransaccion(item.tipo);
+                    
+                    let itemHtml = $(
+                        '<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center shadow-sm mb-2 border rounded">' +
+                            '<div>' +
+                                '<div class="mb-1">' + etiquetaTipo + ' <span class="text-muted small ml-2">' + item.fecha + '</span></div>' +
+                                '<strong class="text-dark">' + item.detalle + '</strong>' +
+                            '</div>' +
+                            '<h5 class="mb-0 font-weight-bold text-secondary">$' + item.monto.toLocaleString('es-CL') + '</h5>' +
+                        '</div>'
+                    );
+
+                    $('#contenedorTransacciones').append(itemHtml);
+                }
+            });
+
+            if ($('#contenedorTransacciones').children().length === 0) {
+                $('#contenedorTransacciones').html(
+                    '<div class="alert alert-light text-center text-muted border">No se encontraron movimientos para este tipo de filtro.</div>'
+                );
+            }
+        }
+
+        $('#filtroTipo').change(function() {
+            let filtroSeleccionado = $(this).val();
+            mostrarUltimosMovimientos(filtroSeleccionado);
+        });
+
+        mostrarUltimosMovimientos('todos');
+    });
+  </script>
+</body>
+</html>

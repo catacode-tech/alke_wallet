@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <title>Depositar</title>
+</head>
+<body>
+  <div class="container mt-5" style="max-width: 450px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Depositar Dinero</h2>
+      <a href="menu.html" class="btn btn-outline-secondary btn-sm">Volver</a>
+    </div>
+
+    <div class="card mb-4 bg-light p-3">
+      <h5>Saldo antes de operar: <strong id="saldoActual">$0</strong></h5>
+    </div>
+
+    <form id="depositForm">
+      <div class="form-group">
+        <label for="montoDeposito">Monto a depositar:</label>
+        <input type="number" id="montoDeposito" class="form-control" placeholder="Ingrese el monto" min="1">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Confirmar Depósito</button>
+    </form>
+
+    <div id="alert-container" class="mt-3"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script>
+    $(document).ready(function() {
+
+        let saldo = parseInt(localStorage.getItem('saldoUsuario')) || 10000;
+        $('#saldoActual').text('$' + saldo.toLocaleString('es-CL'));
+
+        $('#depositForm').submit(function(event) {
+            event.preventDefault();
+            
+            $('#alert-container').empty();
+            $('#leyendaContenedor').empty();
+
+            let montoInput = $('#montoDeposito').val();
+            let monto = parseInt(montoInput);
+
+            if (!montoInput || isNaN(monto) || monto <= 0) {
+                $('#alert-container').html(
+                    '<div class="alert alert-danger text-center shadow-sm">' +
+                        '<strong>Error:</strong> Ingrese un monto válido.' +
+                    '</div>'
+                );
+                return;
+            }
+
+            let nuevoSaldo = saldo + monto;
+            localStorage.setItem('saldoUsuario', nuevoSaldo);
+
+            $('#leyendaContenedor').html(
+                '<p class="mb-0">Monto depositado recientemente: $' + monto.toLocaleString('es-CL') + '</p>'
+            );
+
+            $('#alert-container').html(
+                '<div class="alert alert-success text-center shadow-sm">' +
+                    '<strong>¡Depósito Exitoso!</strong> El saldo ha sido actualizado correctamente.' +
+                '</div>'
+            );
+
+            setTimeout(function() {
+                window.location.href = 'menu.html';
+            }, 2000);
+        });
+
+    });
+  </script>
+</body>
+</html>
