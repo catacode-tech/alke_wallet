@@ -23,11 +23,12 @@
         <input type="number" id="montoEnviar" class="form-control" placeholder="Ingrese el monto" min="1">
       </div>
     </div>
-
+    <!-- Barra de búsqueda en tiempo real para filtrar los contactos -->
     <div class="form-group">
       <input type="text" id="buscarContacto" class="form-control" placeholder="Buscar por nombre o alias...">
     </div>
 
+    <!-- Lista de contactos disponibles. Usamos atributos personalizados como "data-nombre" para rescatar la información fácilmente desde JS -->
     <div class="list-group mb-3" id="listaContactos">
       <div class="list-group-item" data-nombre="Juan Pérez" data-alias="juan.pago">
         <strong>Juan Pérez</strong> <br> <small>Alias: juan.pago | CBU: 1234567890123456789012</small>
@@ -37,14 +38,18 @@
       </div>
     </div>
 
+    <!-- Botón para transferir. Inicia oculto (d-none) y solo aparecerá cuando hagamos clic en un contacto -->
     <button id="btnEnviarDinero" class="btn btn-success btn-block d-none mb-3">Enviar dinero al contacto seleccionado</button>
 
+    <!-- Botón para desplegar el formulario de creación de contactos -->
     <button id="btnMostrarForm" class="btn btn-outline-primary btn-block mb-3">+ Agregar nuevo contacto</button>
 
+    <!-- Contenedor oculto (d-none) que guarda el formulario para un nuevo contacto -->
     <div id="wrapperFormContacto" class="card p-3 mb-3 d-none bg-light">
       <form id="formNuevoContacto">
         <div class="form-group"><label>Nombre:</label><input type="text" id="nuevoNombre" class="form-control"></div>
         <div class="form-group"><label>Alias:</label><input type="text" id="nuevoAlias" class="form-control"></div>
+        <!-- "maxlength" limita la escritura a un tope de 22 caracteres en pantalla -->
         <div class="form-group"><label>CBU (22 dígitos):</label><input type="text" id="nuevoCbu" class="form-control" maxlength="22"></div>
         <div id="errorFormContacto" class="text-danger mb-2"></div>
         <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
@@ -52,6 +57,7 @@
       </form>
     </div>
 
+    <!-- Contenedor inferior para alertas globales de éxito o fondos insuficientes -->
     <div id="mensajeConfirmacion"></div>
   </div>
 
@@ -59,68 +65,83 @@
  
  <script>
     $(document).ready(function() {
+        // Variable global temporal para recordar a qué persona le haremos la transferencia
         let contactoSeleccionado = null;
         
         $('#buscarContacto').on('keyup', function() {
-            let valor = $(this).val().toLowerCase();
+            let valor = $(this).val().toLowerCase();// Pasa la búsqueda a minúsculas para evitar problemas de mayúsculas
             $('#listaContactos .list-group-item').filter(function() {
                 let nombre = $(this).data('nombre').toLowerCase();
                 let alias = $(this).data('alias').toLowerCase();
+
+                // ".toggle()" muestra el elemento si la condición es verdadera (index mayor a -1) u oculta si es falsa
                 $(this).toggle(nombre.indexOf(valor) > -1 || alias.indexOf(valor) > -1);
             });
         });
 
+        // --- SELECCIONAR UN CONTACTO ---
         $('#listaContactos').on('click', '.list-group-item', function() {
+            // Quita el color verde a cualquier otro contacto seleccionado previamente
             $('.list-group-item').removeClass('contacto-seleccionado');
+            // Le agrega el color verde (la clase CSS) al contacto que acabamos de cliquear
             $(this).addClass('contacto-seleccionado');
+            // Guarda el nombre del contacto seleccionado en nuestra variable global
             contactoSeleccionado = $(this).data('nombre');
             
+            // Hace aparecer el botón de enviar dinero quitándole la clase 'd-none'
             $('#btnEnviarDinero').removeClass('d-none');
         });
 
+        // --- DESPLEGAR FORMULARIO CONTACTO ---
         $('#btnMostrarForm').click(function() {
             $('#wrapperFormContacto').removeClass('d-none');
             $(this).addClass('d-none');
         });
-
+        // --- CANCELAR EL FORMULARIO ---
         $('#btnCancelarContacto').click(function() {
-            $('#wrapperFormContacto').addClass('d-none');
+            $('#wrapperFormContacto').addClass('d-none');// Vuelve a ocultar el formulario
             $('#btnMostrarForm').removeClass('d-none');
-            $('#formNuevoContacto')[0].reset();
-            $('#errorFormContacto').empty();
+            $('#formNuevoContacto')[0].reset();// Borra todo lo que el usuario haya escrito en los inputs
+            $('#errorFormContacto').empty();// Limpia mensajes de error previos
         });
 
+        // --- GUARDAR NUEVO CONTACTO ---
         $('#formNuevoContacto').submit(function(event) {
-            event.preventDefault();
-            $('#errorFormContacto').empty();
+            event.preventDefault();// Evita la recarga de página
+            $('#errorFormContacto').empty();// Limpia errores
 
             let nombre = $('#nuevoNombre').val().trim();
             let alias = $('#nuevoAlias').val().trim();
             let cbu = $('#nuevoCbu').val().trim();
 
+            // Valida que el CBU tenga exactamente 22 de largo y que sean solo números (isNaN)
             if (!nombre || !alias || cbu.length !== 22 || isNaN(cbu)) {
                 $('#errorFormContacto').text('Error: Todos los campos son obligatorios. El CBU debe tener exactamente 22 números.');
-                return;
+                return; // Detiene el código si falla la validación
             }
-
+            // Construye una nueva estructura HTML (un nuevo contacto) con los datos recolectados       
             let nuevoItem = $('<div class="list-group-item" data-nombre="' + nombre + '" data-alias="' + alias + '">' +
                 '<strong>' + nombre + '</strong> <br> <small>Alias: ' + alias + ' | CBU: ' + cbu + '</small>' +
             '</div>');
-
+            
+            // Agrega el nuevo elemento HTML al final de nuestra lista de contactos existente
             $('#listaContactos').append(nuevoItem);
 
+            // Cierra el formulario y lo resetea para que quede listo para otra ocasión
             $('#wrapperFormContacto').addClass('d-none');
             $('#btnMostrarForm').removeClass('d-none');
             $('#formNuevoContacto')[0].reset();
         });
-
+        // --- ENVIAR DINERO (PROCESAR TRANSFERENCIA) ---
         $('#btnEnviarDinero').click(function() {
-            $('#mensajeConfirmacion').empty();
+            $('#mensajeConfirmacion').empty(); // Limpia alertas pasadas
 
             let montoInput = $('#montoEnviar').val();
             let monto = parseInt(montoInput);
+            // Trae el saldo guardado en la memoria del navegador. Si no hay nada, asume 10000
             let saldoActual = parseInt(localStorage.getItem('saldoUsuario')) || 10000;
 
+            // Validación de monto básico
             if (!montoInput || isNaN(monto) || monto <= 0) {
                 $('#mensajeConfirmacion').html(
                     '<div class="alert alert-danger text-center shadow-sm"><strong>Error:</strong> Ingrese un monto válido.</div>'
@@ -128,6 +149,7 @@
                 return;
             }
 
+            // VALIDACIÓN DE SALDO: Evita que el usuario quede en negativo (gire en descubierto)
             if (monto > saldoActual) {
                 $('#mensajeConfirmacion').html(
                     '<div class="alert alert-danger text-center shadow-sm"><strong>Fondos insuficientes:</strong> Su saldo actual es de $' + saldoActual.toLocaleString('es-CL') + '.</div>'
@@ -135,15 +157,18 @@
                 return;
             }
 
+              // Resta el monto enviado al saldo que poseía el usuario
             let nuevoSaldo = saldoActual - monto;
             localStorage.setItem('saldoUsuario', nuevoSaldo);
 
+            // Despliega el mensaje verde de éxito informando el dinero enviado y el destinatario
             $('#mensajeConfirmacion').html(
                 '<div class="alert alert-success text-center shadow-sm mt-3">' +
                     '<strong>¡Envío Confirmado!</strong> Se transfirieron $' + monto.toLocaleString('es-CL') + ' a <strong>' + contactoSeleccionado + '</strong> de forma exitosa.' +
                 '</div>'
             );
-
+            
+            // Espera 2 segundos para dar tiempo de leer la confirmación y redirige automáticamente al menú
             setTimeout(function() {
                 window.location.href = 'menu.html';
             }, 2000);
