@@ -16,6 +16,7 @@
           <h2 class="text-dark" id="saldoDisplay">$0</h2>
         </div>
 
+        <!-- Alerta oculta para mostrar los mensajes de "Redirigiendo..." antes de cambiar de pantalla -->
         <div id="mensajeStatus" class="alert alert-info text-center d-none mb-4"></div>
 
         <div class="d-flex flex-column">
@@ -27,21 +28,31 @@
   </div>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script>
+    // Espera a que todo el HTML esté cargado antes de ejecutar el código
     $(document).ready(function() {
 
+      // Intenta obtener el saldo desde el almacenamiento del navegador (localStorage).
+        // Si por alguna razón no encuentra nada, usa 10000 como un saldo de respaldo (por defecto).
         var saldoActual = localStorage.getItem('saldoUsuario') || 10000;
         
+        // Modifica el texto del elemento #saldoDisplay. 
+        // Convierte el saldo a número entero (parseInt) y lo transforma a moneda chilena
         $('#saldoDisplay').text('$' + parseInt(saldoActual).toLocaleString('es-CL'));
 
         $('#btnDepositar').click(function() {
+            // Le quita la clase 'd-none' para que el mensaje sea visible, y le agrega el texto de aviso
             $('#mensajeStatus').removeClass('d-none').text('Redirigiendo a Depositar...');
+
+            // Espera antes de cambiar de página
             setTimeout(function() {
                 window.location.href = 'deposit.html'; 
             }, 1200);
         });
 
         $('#btnEnviar').click(function() {
+            // Muestra el mensaje informativo en la pantalla
             $('#mensajeStatus').removeClass('d-none').text('Redirigiendo a Enviar Dinero...');
+            // Espera y redirige al historial de transacciones
             setTimeout(function() {
                 window.location.href = 'sendmoney.html';
             }, 1200);
